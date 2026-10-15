@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>测一测｜你最像哪位历史人物</title>
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:"PingFang SC","Noto Serif SC","Microsoft YaHei",serif;
+}
+
+body{
+  min-height:100vh;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:28px 16px 40px;
+  background:
+    radial-gradient(circle at 20% 10%, #fff7e2 0, transparent 26%),
+    radial-gradient(circle at 80% 20%, #eaf6ff 0, transparent 28%),
+    radial-gradient(circle at 50% 90%, #fdeee4 0, transparent 32%),
+    linear-gradient(160deg, #ffffff 0%, #f7f1e3 45%, #eef5ff 100%);
+  position:relative;
+  overflow-x:hidden;
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(circle at 10% 30%, rgba(255, 220, 180, 0.35), transparent 30%),
+    radial-gradient(circle at 90% 70%, rgba(180, 210, 255, 0.32), transparent 30%);
+  pointer-events:none;
+}
+
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  opacity:0.35;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  pointer-events:none;
+}
+
+.wrap{
+  width:min(96vw, 640px);
+  position:relative;
+  z-index:2;
+}
+
+.box{
+  background:rgba(255,255,255,0.78);
+  border:1px solid rgba(210, 180, 140, 0.35);
+  border-radius:26px;
+  padding:34px 28px;
+  box-shadow:
+    0 20px 50px rgba(120, 90, 50, 0.12),
+    0 8px 20px rgba(120, 90, 50, 0.08),
+    inset 0 0 0 1px rgba(255,255,255,0.6);
+  backdrop-filter: blur(8px);
+  margin-bottom:24px;
+}
+
+.start-box,
+.q-box,
+.result-box{
+  display:none;
+}
+
+.active{
+  display:block;
+  animation: fadeIn 0.55s ease;
+}
+
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(14px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+.title{
+  font-size:30px;
+  font-weight:700;
+  text-align:center;
+  color:#4a3520;
+  letter-spacing:3px;
+  margin-bottom:12px;
+}
+
+.subtitle{
+  text-align:center;
+  font-size:15px;
+  line-height:1.7;
+  color:#7a6752;
+  margin-bottom:22px;
+}
+
+.highlight-note{
+  background:rgba(255, 235, 205, 0.55);
+  border:1px solid rgba(210, 170, 120, 0.35);
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:18px;
+  font-size:14px;
+  line-height:1.8;
+  color:#5b4a36;
+}
+
+.highlight-note p{
+  margin-bottom:8px;
+}
+
+.highlight-note p:last-child{
+  margin-bottom:0;
+}
+
+.tip-small{
+  text-align:center;
+  font-size:13px;
+  color:#a98b6a;
+  margin-bottom:8px;
+}
+.tip-choose-near{
+  text-align:center;
+  font-size:13px;
+  color:#a98b6a;
+  margin-bottom:22px;
+}
+
+/* 开始页按钮居中 */
+.start-box .btn{
+  display:block;
+  margin:0 auto;
+  width:80%;
+}
+
+.progress{
+  height:8px;
+  background:rgba(180, 140, 90, 0.18);
+  border-radius:99px;
+  margin-bottom:24px;
+  overflow:hidden;
+}
+
+.progress-inner{
+  height:100%;
+  background:linear-gradient(90deg, #e9c48a, #c99b5b);
+  width:0%;
+  transition:0.45s ease;
+}
+
+.q-num{
+  font-size:14px;
+  color:#a98b6a;
+  margin-bottom:12px;
+}
+
+.q-text{
+  font-size:20px;
+  font-weight:600;
+  color:#4a3520;
+  line-height:1.65;
+  margin-bottom:24px;
+}
+
+.opt{
+  width:100%;
+  background:rgba(255,255,255,0.6);
+  border:1px solid rgba(210, 180, 140, 0.35);
+  border-radius:16px;
+  padding:16px 18px;
+  text-align:left;
+  color:#5b4a36;
+  font-size:16px;
+  margin-bottom:14px;
+  cursor:pointer;
+  transition:0.25s ease;
+}
+
+.opt:hover{
+  background:rgba(255, 235, 205, 0.7);
+  border-color:#c99b5b;
+  transform:translateY(-2px);
+}
+
+.opt.selected{
+  background:rgba(233, 196, 138, 0.55);
+  border-color:#b5843c;
+}
+
+.btn-row{
+  display:flex;
+  gap:14px;
+  margin-top:26px;
+}
+
+.btn{
+  flex:1;
+  padding:15px;
+  border:none;
+  border-radius:16px;
+  background:linear-gradient(135deg, #e9c48a, #c99b5b);
+  color:#fff;
+  font-weight:700;
+  font-size:16px;
+  letter-spacing:2px;
+  cursor:pointer;
+  transition:0.25s ease;
+  box-shadow:0 8px 18px rgba(180, 140, 90, 0.25);
+}
+
+.btn:hover{
+  background:linear-gradient(135deg, #f0cf97, #d4a56a);
+  transform:translateY(-2px);
+}
+
+.btn:disabled{
+  background:#d9cfc1;
+  color:#fff;
+  cursor:not-allowed;
+  transform:none;
+  box-shadow:none;
+}
+
+.result-card-top{
+  text-align:center;
+}
+
+.avatar{
+  width:64%;
+  aspect-ratio:1/1;
+  margin:0 auto 22px;
+  border-radius:50%;
+  overflow:hidden;
+  border:1px solid rgba(180, 140, 90, 0.28);
+  box-shadow:
+    0 12px 28px rgba(120, 90, 50, 0.18),
+    inset 0 0 0 4px rgba(255,255,255,0.7);
+  background:#f3ead8;
+}
+
+.avatar img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+.result-name{
+  font-size:40px;
+  font-weight:700;
+  letter-spacing:6px;
+  color:#4a3520;
+  margin-bottom:6px;
+}
+
+.result-sub{
+  font-size:13px;
+  letter-spacing:4px;
+  color:#a98b6a;
+  margin-bottom:22px;
+}
+
+.result-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:center;
+  margin-bottom:24px;
+}
+
+.result-tag{
+  padding:7px 16px;
+  background:rgba(255, 235, 205, 0.7);
+  border:1px solid rgba(210, 170, 120, 0.35);
+  border-radius:999px;
+  color:#7a5c3a;
+  font-size:15px;
+  letter-spacing:1px;
+}
+
+.divider{
+  height:1px;
+  background:linear-gradient(900deg, transparent, rgba(180, 140, 90, 0.4), transparent);
+  margin-bottom:24px;
+}
+
+.result-desc{
+  color:#5b4a36;
+  font-size:17px;
+  line-height:1.85;
+  margin-bottom:24px;
+  text-align:justify;
+}
+
+.result-quote{
+  border-left:3px solid #c9a06a;
+  padding:14px 18px;
+  background:rgba(255, 240, 210, 0.55);
+  border-radius:14px;
+  color:#6b4f2c;
+  font-size:18px;
+  line-height:1.7;
+}
+
+.result-footer{
+  margin-top:28px;
+  text-align:center;
+  font-size:12px;
+  letter-spacing:3px;
+  color:#b59572;
+}
+
+.btn-small{
+  width:auto;
+  display:block;
+  margin:16px auto 0;
+  padding:11px 22px;
+  font-size:14px;
+  letter-spacing:2px;
+  background:rgba(255,255,255,0.6);
+  color:#7a5c3a;
+  border:1px solid rgba(210, 170, 120, 0.4);
+  border-radius:999px;
+  cursor:pointer;
+  transition:0.25s ease;
+}
+
+.btn-small:hover{
+  background:rgba(255, 235, 205, 0.8);
+}
+
+.pay-block{
+  border:1px dashed rgba(210, 170, 120, 0.5);
+  border-radius:20px;
+  padding:24px 22px;
+  background:rgba(255, 240, 210, 0.55);
+  margin:28px 0 18px;
+  text-align:center;
+}
+
+.pay-block h3{
+  color:#6b4f2c;
+  font-size:18px;
+  margin-bottom:10px;
+  text-align:center;
+  letter-spacing:2px;
+}
+
+.pay-block p{
+  font-size:14px;
+  line-height:1.75;
+  color:#5b4a36;
+  margin-bottom:18px;
+}
+
+.btn-pay{
+  background:linear-gradient(135deg, #f0a963, #d47a2c);
+  box-shadow:0 10px 22px rgba(212, 122, 44, 0.28);
+  display:block;
+  margin:0 auto;
+  width:75%;
+}
+
+.btn-pay:hover{
+  background:linear-gradient(135deg, #f4b579, #e08a42);
+}
+
+/* 重新测试按钮居中 */
+#restartBtn{
+  display:block;
+  margin:0 auto;
+  width:80%;
+}
+
+.copy-tip{
+  text-align:center;
+  font-size:13px;
+  color:#a98b6a;
+  margin-top:14px;
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- 开始页 -->
+  <div class="box start-box active">
+    <h1 class="title">测一测｜你最像哪位历史人物</h1>
+    <p class="subtitle">穿越千年，寻你的灵魂原型。<br>完成测试，免费获取基础匹配结果，可解锁完整深度解析报告。</p>
+
+    <div class="highlight-note">
+      <p>✦ 根据你的处事模式，匹配气质相近的历史人物</p>
+      <p>✦ 完整报告包含天赋特质、成长短板、适合赛道、行事忠告</p>
+      <p>✦ 适合自我探索、择业参考、知己识人（趣味向，仅供参考）</p>
+    </div>
+
+    <p class="tip-small">⚠️ 趣味性格测试｜非严谨心理测评</p>
+    <p class="tip-choose-near">💡 若没有完全贴合你的选项，请选择最接近的一项</p>
+
+    <button class="btn" id="startBtn">立即开始测试</button>
+  </div>
+
+  <!-- 问卷区 -->
+  <div class="box q-box">
+    <div class="progress">
+      <div class="progress-inner" id="progressBar"></div>
+    </div>
+    <div class="q-num" id="qNum">第1题 / 共16题</div>
+    <div class="q-text" id="qText"></div>
+    <div id="optWrap"></div>
+    <div class="btn-row">
+      <button class="btn" id="prevBtn">上一题</button>
+      <button class="btn" id="nextBtn">下一题</button>
+    </div>
+  </div>
+
+  <!-- 结果页 -->
+  <div class="box result-box">
+    <div class="result-card-top">
+      <div class="avatar">
+        <img id="avatarImg" src="" alt="人物画像" onerror="this.style.display='none'">
+      </div>
+      <div class="result-name" id="resName"></div>
+      <div class="result-sub" id="resSub"></div>
+
+      <div class="result-tags" id="resTag"></div>
+
+      <div class="divider"></div>
+
+      <p class="result-desc" id="resDesc"></p>
+      <p class="result-quote" id="resQuote"></p>
+    </div>
+
+    <div class="pay-block">
+      <h3>🔮 解锁完整深度人物报告</h3>
+      <p>当前为免费精简预览。完整版将为你展开：内在深层特质、隐藏短板、人际模式、适合发展方向、专属千年忠告。</p>
+      <a href="#pay">
+        <button class="btn btn-pay">点击查看完整</button>
+      </a>
+    </div>
+
+    <button class="btn" id="restartBtn">重新测试</button>
+    <button class="btn-small" id="copyShare">复制分享文案</button>
+    <p class="copy-tip">✨ 趣味性格测试｜仅供娱乐，不作专业心理结论</p>
+  </div>
+
+</div>
+
+<script>
+// 维度定义：T理性, F共情, J规划, P即兴
+const questions = [
+  {
+    q: "面临重大抉择时，你更倾向？",
+    opts: [
+      {text:"基于客观逻辑推演，评估长期利弊后定方案", T:2, F:0, J:2, P:0},
+      {text:"优先兼顾各方诉求，力求照顾到所有人的感受", T:0, F:2, J:1, P:0},
+      {text:"提前搭建预案，按计划稳步推进，尽量规避变数", T:1, F:0, J:2, P:0},
+      {text:"先把握当下机会，边做边调整，接受临场变化", T:1, F:0, J:0, P:2}
+    ]
+  },
+  {
+    q: "在团队讨论出现分歧，你一般？",
+    opts: [
+      {text:"聚焦逻辑对错，就事论事，区分事实与情绪", T:2, F:0, J:1, P:0},
+      {text:"先安抚对立情绪，促进互相理解，维护团队氛围", T:0, F:2, J:1, P:0},
+      {text:"尽快收敛讨论，形成明确决议，落地执行", T:1, F:0, J:2, P:0},
+      {text:"鼓励发散脑洞，保留多种备选思路，不急下定论", T:1, F:0, J:0, P:2}
+    ]
+  },
+  {
+    q: "遭到他人误解与非议，你的本能反应？",
+    opts: [
+      {text:"梳理事实证据，理性澄清，不被情绪裹挟", T:2, F:0, J:1, P:0},
+      {text:"体察对方立场，反思是否伤害他人，优先修复关系", T:0, F:2, J:1, P:0},
+      {text:"坚持原定目标，不受外界杂音干扰，继续按计划推进", T:1, F:0, J:2, P:0},
+      {text:"看淡评价，顺其自然，不愿花费精力反复解释", T:1, F:0, J:0, P:2}
+    ]
+  },
+  {
+    q: "你更认可下面哪一句行事观？",
+    opts: [
+      {text:"事理有本，凡事追求严谨、自洽的内在逻辑", T:2, F:0, J:1, P:0},
+      {text:"行事贵在存善，道义人心，是长久成事之本", T:0, F:2, J:1, P:0},
+      {text:"谋定而后动，提前布局，减少临时被动", T:1, F:0, J:2, P:0},
+      {text:"时势常变，不必固守定式，随机应变方为上策", T:1, F:0, J:0, P:2}
+    ]
+  },
+  {
+    q: "长期理想遇到巨大阻碍，你会？",
+    opts: [
+      {text:"拆解阻碍，分析可行路径，寻找理性破局方案", T:2, F:0, J:1, P:0},
+      {text:"顾及同行伙伴，不愿独自硬扛，考虑保全众人", T:0, F:2, J:1, P:0},
+      {text:"长期坚持，分步执行，持续投入直至达成目标", T:1, F:0, J:2, P:0},
+      {text:"保留初心，但灵活调整路径，寻找新的突破口", T:1, F:0, J:0, P:2}
+    ]
+  },
+  {
+    q: "拥有一段空闲时间，你更愿意？",
+    opts: [
+      {text:"研读资料，复盘思考，梳理框架与规律", T:2, F:0, J:1, P:0},
+      {text:"约知己闲谈，交换感受，维系深度情谊", T:0, F:2, J:1, P:0},
+      {text:"提前规划安排，完成预定清单内的事项", T:1, F:0, J:2, P:0},
+      {text:"随心体验，随性探索，不做硬性安排", T:1, F:0, J:0, P:2}
+    ]
+  },
+  {
+    q: "判断一个人是否值得托付，优先看？",
+    opts: [
+      {text:"思考方式、判断力以及对因果事理的把握", T:2, F:0, J:1, P:0},
+      {text:"品性、同理心，以及待人是否真诚宽厚", T:0, F:2, J:1, P:0},
+      {text:"信守承诺，做事稳定，能按时兑现约定", T:1, F:0, J:2, P:0},
+      {text:"思维灵活，能适应变化，善于临场解决难题", T:1, F:0, J:0, P:2}
+    ]
+  },
+  {
+    q: "对于既定规则，你的看法是？",
+    opts: [
+      {text:"规则来自理性总结，有其底层道理，应当尊重", T:2, F:0, J:1, P:0},
+      {text:"规则不能脱离人情，严苛到伤人，则需要变通", T:0, F:2, J:1, P:0},
+      {text:"统一规则保障秩序，应尽量按标准执行，减少特例", T:1, F:0, J:2, P:0},
+      {text:"规则服务目标，环境变了，就可以酌情调整", T:1, F:0, J:0, P:2}
+    ]
+  },
+  {
+    q: "构思新项目，你最先关注？",
+    opts: [
+      {text:"底层逻辑，论证方案是否合理、自洽", T:2, F:0, J:1, P:0},
+      {text:"这件事会给相关的人带来什么样的影响", T:0, F:2, J:1, P:0},
+      {text:"时间节点、分工安排、落地验收标准", T:1, F:0, J:2, P:0},
+      {text:"可以尝试哪些新颖方式，愿意试错迭代", T:1, F:0, J:0, P:2}
+    ]
+  },
+  {
+    q: "面对成败得失，你更倾向？",
+    opts: [
+      {text:"客观复盘因果，接纳不受主观控制的结果", T:2, F:0, J:1, P:0},
+      {text:"最在意过程里有没有守住本心，善待身边之人", T:0, F:2, J:1, P:0},
+      {text:"重视长期积累，相信持续投入，终会有所收获", T:1, F:0, J:2, P:0},
+      {text:"重在体验与经历，不强求预设的结局", T:1, F:0, J:0, P:2}
+    ]
+  },
+  {
+    q: "做一份计划，你习惯？",
+    opts: [
+      {text:"评估各种约束条件，推导出最优可行方案", T:2, F:0, J:1, P:0},
+      {text:"征求相关人的意见，兼顾大家的接受程度", T:0, F:2, J:1, P:0},
+      {text:"细化步骤、预留缓冲，严格按时间表执行", T:1, F:0, J:2, P:0},
+      {text:"只定核心方向，保留弹性，随实际情况调整", T:1, F:0, J:0, P:2}
+    ]
+  },
+  {
+    q: "矛盾发生之后，你更偏向？",
+    opts: [
+      {text:"拆解矛盾成因，寻找能够杜绝重复发生的方案", T:2, F:0, J:1, P:0},
+      {text:"倾听双方感受，争取达成互相谅解，修复关系", T:0, F:2, J:1, P:0},
+      {text:"明确权责，定好规范，防止同类冲突再次出现", T:1, F:0, J:2, P:0},
+      {text:"先搁置，等局势自然缓和，再伺机处理", T:1, F:0, J:0, P:2}
+    ]
+  },
+  {
+    q: "看到一个新观点，你第一反应？",
+    opts: [
+      {text:"检验论证逻辑，核查前提是否成立", T:2, F:0, J:1, P:0},
+      {text:"思考这套主张对人会带来什么利弊与影响", T:0, F:2, J:1, P:0},
+      {text:"评估能不能落地，执行是否有清晰路径", T:1, F:0, J:2, P:0},
+      {text:"联想衍生可能性，看看能否启发新思路", T:1, F:0, J:0, P:2}
+    ]
+  },
+  {
+    q: "评价一件方案好不好，优先看？",
+    opts: [
+      {text:"推理严谨，逻辑通顺，能自圆其说", T:2, F:0, J:1, P:0},
+      {text:"是否尊重人，符合善意与道义", T:0, F:2, J:1, P:0},
+      {text:"流程清晰，可控性强，结果可预期", T:1, F:0, J:2, P:0},
+      {text:"有新意，能突破旧模式，带来新机会", T:1, F:0, J:0, P:2}
+    ]
+  },
+  {
+    q: "持续高压一段时间，你通常？",
+    opts: [
+      {text:"冷静拆解难点，优化流程，理性攻坚", T:2, F:0, J:1, P:0},
+      {text:"期待理解和倾诉，需要情感支持来恢复状态", T:0, F:2, J:1, P:0},
+      {text:"列出任务优先级，稳步推进，直到完成", T:1, F:0, J:2, P:0},
+      {text:"暂时跳出节奏，换个环境，恢复灵感", T:1, F:0, J:0, P:2}
+    ]
+  },
+  {
+    q: "如果由你来发起一件全新的事，你会？",
+    opts: [
+      {text:"推演底层逻辑，评估可行性，论证价值", T:2, F:0, J:1, P:0},
+      {text:"寻找理念契合的同路人，凝聚共识一起出发", T:0, F:2, J:1, P:0},
+      {text:"制定阶段目标，设置验收节点，有序推进", T:1, F:0, J:2, P:0},
+      {text:"先小范围试做，根据反馈持续迭代调整", T:1, F:0, J:0, P:2}
+    ]
+  }
+];
+
+// 四维基准 T,F,J,P
+const resultList = [
+  {
+    mbti:"INTJ",
+    name:"诸葛亮",
+    sub:"ZHU GE LIANG · 卧龙",
+    T:1.8, F:0.2, J:1.9, P:0.1,
+    tags:["战略远见","独立推演","目标坚定"],
+    desc:"你擅长长期战略规划，习惯推演多种未来可能性，构建系统性方案。你独立审慎，一旦确立信念便矢志不渝，像诸葛亮一般，善于预判大势，谋定而后动。",
+    quote:"鞠躬尽瘁，死而后已。",
+    img:"https://s41.ax1x.com/2026/10/15/pnd8gW4.png"
+  },
+  {
+    mbti:"INTP",
+    name:"朱熹",
+    sub:"ZHU XI · 理学家",
+    T:1.9, F:0.1, J:0.8, P:1.2,
+    tags:["思辨探索","追本溯源","理论构建"],
+    desc:"你热衷于探究底层逻辑，喜欢拆解概念、构建自洽的理论，享受纯粹思辨。相比快速落地，你更愿意花时间厘清原理，像朱熹，穷究义理，追求思想体系的完备。",
+    quote:"问渠那得清如许？为有源头活水来。",
+    img:"https://s41.ax1x.com/2026/10/15/pnd8cYF.png"
+  },
+  {
+    mbti:"ENTJ",
+    name:"曹操",
+    sub:"CAO CAO · 魏武",
+    T:1.7, F:0.3, J:1.8, P:0.2,
+    tags:["雄才大略","务实果决","格局开阔"],
+    desc:"你是天生的统帅，目标感极强，敢于打破陈旧桎梏，懂得取舍，知人善任，愿意为长远目标承担代价，像曹操，不拘俗论，重实效，擅于开辟道路。",
+    quote:"夫英雄者，胸怀大志，腹有良谋。",
+    img:"https://s41.ax1x.com/2026/10/15/pnd8Iw6.png"
+  },
+  {
+    mbti:"ENTP",
+    name:"郭嘉",
+    sub:"GUO JIA · 鬼才",
+    T:1.8, F:0.2, J:0.3, P:1.7,
+    tags:["奇思善辩","洞悉人心","灵活机变"],
+    desc:"你的思维发散敏捷，喜欢推演多种可能性，擅长逆向思考、捕捉机会，不喜欢死板规则，乐于思辨博弈，如同郭嘉，善出奇谋，预判对手，随机应变。",
+    quote:"兵贵神速，出其不意。",
+    img:"https://s41.ax1x.com/2026/10/15/pnd8Wl9.png"
+  },
+  {
+    mbti:"INFJ",
+    name:"王阳明",
+    sub:"WANG YANG MING · 心学",
+    T:0.8, F:1.8, J:1.5, P:0.5,
+    tags:["向内求索","知行合一","洞察人心"],
+    desc:"你拥有稳定自洽的价值观，习惯向内思考，由本心指导行动。外柔内刚，擅长启发他人而非强行指挥，正如王阳明，心即是理，知行合一。",
+    quote:"知行合一，致良知。",
+    img:"https://s41.ax1x.com/2026/10/15/pnd8RSJ.png"
+  },
+  {
+    mbti:"INFP",
+    name:"李煜",
+    sub:"LI YU · 词帝",
+    T:0.3, F:1.9, J:0.4, P:1.6,
+    tags:["感性细腻","浪漫内省","忠于本心"],
+    desc:"你的内心世界丰盈敏感，审美力强，重视内在感受与理想，不擅长复杂的权谋算计，随性自然，容易被情绪和美感打动，如同后主李煜，情思婉转，以文字寄怀。",
+    quote:"问君能有几多愁？恰似一江春水向东流。",
+    img:"https://s41.ax1x.com/2026/10/15/pnd8fyR.png"
+  },
+  {
+    mbti:"ENFJ",
+    name:"刘备",
+    sub:"LIU BEI · 昭烈",
+    T:0.4, F:1.9, J:1.6, P:0.4,
+    tags:["共情感召","重信守义","凝聚人心"],
+    desc:"你富有感染力，善于体察他人，擅长以信念、信义凝聚伙伴，重视共同理想，不靠强权压制，而靠真诚感召他人，一如刘备，以人为本，百折而不馁。",
+    quote:"夫济大事必以人为本。",
+    img:"https://img.naixiai.cn/2026/10/15/1792049200482.png"
+  },
+  {
+    mbti:"ENFP",
+    name:"李白",
+    sub:"LI BAI · 诗仙",
+    T:0.5, F:1.7, J:0.2, P:1.8,
+    tags:["浪漫自由","灵感迸发","热情外放"],
+    desc:"你向往自由，想象力旺盛，灵感常常不期而至，讨厌僵化束缚，热爱新鲜体验，感染力强，随性洒脱，和李白一样，心怀浪漫，快意江湖。",
+    quote:"天生我材必有用，千金散尽还复来。",
+    img:"https://s41.ax1x.com/2026/10/15/pnd8hO1.png"
+  },
+  {
+    mbti:"ISTJ",
+    name:"包拯",
+    sub:"BAO ZHENG · 包公",
+    T:1.4, F:0.4, J:1.8, P:0.2,
+    tags:["严谨守矩","尊重事实","恪守准则"],
+    desc:"你重视制度、证据与先例，做事严谨审慎，讲究权责分明，愿意按既定规则公正行事，责任心强，不喜随意变通，如包拯，秉公持正，不徇私情。",
+    quote:"廉者，民之表也；贪者，民之贼也。",
+    img:"https://img.naixiai.cn/2026/10/15/179203346922575c4ce23d93c1461.png"
+  },
+  {
+    mbti:"ISFJ",
+    name:"苏武",
+    sub:"SU WU · 忠臣",
+    T:0.5, F:1.7, J:1.7, P:0.3,
+    tags:["坚忍忠诚","默默守护","重诺守信"],
+    desc:"你温和内敛，极重承诺与本分，愿意默默坚持、守护认定的道义，不爱张扬，踏实可靠，在漫长困境里守住初心，正如苏武，十九年持节不屈。",
+    quote:"屈节辱命，虽生，何面目以归汉！",
+    img:"https://s41.ax1x.com/2026/10/15/pnd85ex.png"
+  },
+  {
+    mbti:"ESTJ",
+    name:"张居正",
+    sub:"ZHANG JU ZHENG · 宰相",
+    T:1.5, F:0.5, J:1.9, P:0.1,
+    tags:["务实管理","强执行力","重视制度"],
+    desc:"你擅长组织、落地和考核，看重秩序、流程与实效，适合推动制度改革，行事雷厉风行，以落地结果为目标，一如张居正，推行新政，纲纪严明。",
+    quote:"天下之事，不难于立法，而难于法之必行。",
+    img:"https://img.naixiai.cn/2026/10/15/1792033471190f0a4f1b46022e49b.png"
+  },
+  {
+    mbti:"ESFJ",
+    name:"冯道",
+    sub:"FENG DAO · 长乐老",
+    T:0.6, F:1.8, J:1.5, P:0.5,
+    tags:["体察人情","调和各方","维稳务实"],
+    desc:"你擅长沟通协调，体察众人诉求，重视稳定，懂得维系人际平衡，优先顾及普通人福祉，擅长在复杂环境里斡旋，维持秩序与人心安稳。",
+    quote:"但行好事，莫问前程。",
+    img:"https://img.naixiai.cn/2026/10/15/1792033474199.png"
+  },
+  {
+    mbti:"ISTP",
+    name:"鲁班",
+    sub:"LU BAN · 巧匠",
+    T:1.7, F:0.3, J:0.4, P:1.8,
+    tags:["实操能手","临场应变","拆解问题"],
+    desc:"你擅长动手实践，习惯在试错中理解事物运作原理，临场应变很强，讨厌空泛理论，遇到难题即兴调整方案，像鲁班，精于器物，长于实操创造。",
+    quote:"巧者，述而不作。",
+    img:"https://img.naixiai.cn/2026/10/15/1792033475059.png"
+  },
+  {
+    mbti:"ISFP",
+    name:"李清照",
+    sub:"LI QING ZHAO · 易安居士",
+    T:0.4, F:1.7, J:0.3, P:1.8,
+    tags:["审美敏锐","忠于感受","随境而感"],
+    desc:"你对美、情绪、细节感知敏锐，不喜生硬规则，忠于自身体验，擅长捕捉细碎、真切的感受，用审美与创作表达自我，如同李清照，词由心生，随境遇流转。",
+    quote:"知否，知否？应是绿肥红瘦。",
+    img:"https://img.naixiai.cn/2026/10/15/1792033477515bc961a2797ab635e.png"
+  },
+  {
+    mbti:"ESTP",
+    name:"项羽",
+    sub:"XIANG YU · 霸王",
+    T:1.5, F:0.5, J:0.2, P:1.9,
+    tags:["果敢迅猛","临场博弈","相信实力"],
+    desc:"你反应迅速，偏爱即时行动，擅长临场博弈，敢于冒险，爆发力极强，相信自身实力，对冗长规划耐心不足，像项羽，豪情盖世，凭直觉与勇决破局。",
+    quote:"力拔山兮气盖世，时不利兮骓不逝。",
+    img:"https://img.naixiai.cn/2026/10/15/1792033480331.png"
+  },
+  {
+    mbti:"ESFP",
+    name:"苏轼",
+    sub:"SU SHI · 东坡",
+    T:0.6, F:1.6, J:0.4, P:1.7,
+    tags:["热爱生活","鲜活乐观","乐于交游"],
+    desc:"你热爱当下，感知力强，享受人间烟火，乐观鲜活，很容易感染身边人，随遇而安，擅长在平凡日常里发现乐趣，如同苏轼，走到哪里，都能好好生活。",
+    quote:"竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生。",
+    img:"https://img.naixiai.cn/2026/10/15/1792033481232.png"
+  }
+];
+
+const startBox = document.querySelector(".start-box");
+const qBox = document.querySelector(".q-box");
+const resBox = document.querySelector(".result-box");
+const qNum = document.getElementById("qNum");
+const qText = document.getElementById("qText");
+const optWrap = document.getElementById("optWrap");
+const progressBar = document.getElementById("progressBar");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+
+const resName = document.getElementById("resName");
+const resSub = document.getElementById("resSub");
+const resTag = document.getElementById("resTag");
+const resDesc = document.getElementById("resDesc");
+const resQuote = document.getElementById("resQuote");
+const avatarImg = document.getElementById("avatarImg");
+
+let current = 0;
+const totalQ = questions.length;
+let answers = Array(totalQ).fill(null);
+
+document.getElementById("startBtn").onclick = ()=>{
+  startBox.classList.remove("active");
+  qBox.classList.add("active");
+  current = 0;
+  answers = Array(totalQ).fill(null);
+  renderQuestion();
+};
+
+function renderQuestion(){
+  const item = questions[current];
+  qNum.innerText = `第${current+1}题 / 共${totalQ}题`;
+  qText.innerText = item.q;
+  optWrap.innerHTML = "";
+  const pct = (current/totalQ)*100;
+  progressBar.style.width = pct + "%";
+
+  item.opts.forEach((opt, idx)=>{
+    const btn = document.createElement("button");
+    btn.className = "opt";
+    if(answers[current] && answers[current].idx === idx){
+      btn.classList.add("selected");
+    }
+    btn.innerText = opt.text;
+    btn.onclick = ()=>{
+      answers[current] = { T:opt.T, F:opt.F, J:opt.J, P:opt.P, idx };
+      renderQuestion();
+      setTimeout(()=>{
+        if(current < totalQ - 1){
+          current++;
+          renderQuestion();
+        }else{
+          calcResult();
+        }
+      }, 350);
+    };
+    optWrap.appendChild(btn);
+  });
+
+  prevBtn.disabled = current === 0;
+  nextBtn.innerText = current === totalQ - 1 ? "查看结果" : "下一题";
+}
+
+prevBtn.onclick = ()=>{
+  if(current > 0){
+    current--;
+    renderQuestion();
+  }
+};
+
+nextBtn.onclick = ()=>{
+  if(current < totalQ - 1){
+    current++;
+    renderQuestion();
+  }else{
+    calcResult();
+  }
+};
+
+// 四维欧氏距离匹配算法
+function calcResult(){
+  let sumT=0, sumF=0, sumJ=0, sumP=0;
+  let validCnt = 0;
+  for(const a of answers){
+    if(a){
+      sumT += a.T;
+      sumF += a.F;
+      sumJ += a.J;
+      sumP += a.P;
+      validCnt++;
+    }
+  }
+  const avgT = sumT / validCnt;
+  const avgF = sumF / validCnt;
+  const avgJ = sumJ / validCnt;
+  const avgP = sumP / validCnt;
+
+  // 遍历，计算四维距离
+  const scored = resultList.map(p=>{
+    const dt = p.T - avgT;
+    const df = p.F - avgF;
+    const dj = p.J - avgJ;
+    const dp = p.P - avgP;
+    const dist = Math.sqrt(dt*dt + df*df + dj*dj + dp*dp);
+    return {...p, dist};
+  }).sort((a,b)=>a.dist - b.dist);
+
+  const best = scored[0];
+  showResult(best);
+}
+
+function showResult(best){
+  qBox.classList.remove("active");
+  resBox.classList.add("active");
+  resName.innerText = best.name;
+  resSub.innerText = best.sub || "";
+  resTag.innerHTML = best.tags.map(t=>`<span class="result-tag">${t}</span>`).join(" ");
+  resDesc.innerText = best.desc;
+  resQuote.innerText = `「${best.quote}」`;
+  avatarImg.src = best.img;
+  avatarImg.style.display = best.img ? "block" : "none";
+
+  document.getElementById("copyShare").onclick = async ()=>{
+    const shareTxt = `✨测试结果：我最像【${best.name}】\n标签：${best.tags.join("｜")}\n评价：${best.desc}\n名句：${best.quote}\n来测测你最像哪位历史人物！解锁完整深度报告👉`;
+    try{
+      await navigator.clipboard.writeText(shareTxt);
+      alert("✅分享文案复制成功！");
+    }catch(e){
+      alert("复制失败，请手动复制");
+    }
+  }
+}
+
+document.getElementById("restartBtn").onclick = ()=>{
+  resBox.classList.remove("active");
+  startBox.classList.add("active");
+};
+</script>
+
+</body>
+</html>
